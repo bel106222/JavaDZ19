@@ -1,4 +1,5 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
+<%@ page isELIgnored="false" %>   <!-- убедимся, что EL включён (по умолчанию true в современных контейнерах) -->
 <%@ page import="java.util.List, quiz.javadz19.models.Question" %>
 <%
   String category = (String) request.getAttribute("category");
@@ -15,6 +16,9 @@
   <title>Результаты – <%= category %></title>
 </head>
 <body>
+<h4>Пользователь: ${sessionScope.user.username}</h4>
+<%-- Ошибка через EL (если передана) --%>
+${not empty error ? '<p style="color:red;">'.concat(error).concat('</p>') : ''}
 <h1>Викторина завершена!</h1>
 <h2>Категория: <%= category %></h2>
 <p><b>Правильных ответов:</b> <%= correctCount %> из <%= total %></p>

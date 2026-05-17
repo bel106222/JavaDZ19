@@ -7,7 +7,7 @@ import jakarta.servlet.http.*;
 import jakarta.servlet.annotation.*;
 
 import quiz.javadz19.models.Question;
-import quiz.javadz19.models.QuizModel;
+import quiz.javadz19.models.Quiz;
 
 /**
  * Контроллер викторины.
@@ -27,13 +27,19 @@ public class QuizController extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
+        // Защита: только для авторизованных пользователей
+        HttpSession session = request.getSession(false);
+        if (session == null || session.getAttribute("user") == null) {
+            response.sendRedirect(request.getContextPath() + "/auth?action=login");
+            return;
+        }
+
         String category = request.getParameter("category");
-        HttpSession session = request.getSession();
 
         // --- Ветка 1: Начало новой викторины (пришёл параметр category) ---
         if (category != null && !category.isEmpty()) {
             // Получаем вопросы для выбранной категории через модель
-            List<Question> categoryQuestions = QuizModel.getQuestionsByCategory(category);
+            List<Question> categoryQuestions = Quiz.getQuestionsByCategory(category);
 
             // Если категория не найдена – показываем страницу с ошибкой
             if (categoryQuestions.isEmpty()) {
@@ -80,7 +86,7 @@ public class QuizController extends HttpServlet {
             request.setAttribute("total", quizQuestions.size());
             request.setAttribute("incorrectCount", quizQuestions.size() - correctCount);
 
-            // Очищаем сессию, чтобы результаты не показывались повторно
+            // Очистка состояния викторины (но не сессии пользователя), чтобы не показать повторно
             session.removeAttribute("quizQuestions");
             session.removeAttribute("currentIndex");
             session.removeAttribute("results");
@@ -108,7 +114,13 @@ public class QuizController extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        HttpSession session = request.getSession();
+        // Защита POST-запросов
+        HttpSession session = request.getSession(false);
+        if (session == null || session.getAttribute("user") == null) {
+            response.sendRedirect(request.getContextPath() + "/auth?action=login");
+            return;
+        }
+
         List<Question> quizQuestions = (List<Question>) session.getAttribute("quizQuestions");
         Integer currentIndex = (Integer) session.getAttribute("currentIndex");
         boolean[] results = (boolean[]) session.getAttribute("results");
@@ -129,7 +141,7 @@ public class QuizController extends HttpServlet {
         Question currentQ = quizQuestions.get(currentIndex);
 
         // Используем модель для проверки ответа
-        boolean isCorrect = QuizModel.checkAnswer(currentQ, answerParam, isTimeout);
+        boolean isCorrect = Quiz.checkAnswer(currentQ, answerParam, isTimeout);
 
         // Сохраняем результат и переходим к следующему вопросу
         results[currentIndex] = isCorrect;

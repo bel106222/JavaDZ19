@@ -1,5 +1,6 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ page import="java.util.List" %>
+<%@ page isELIgnored="false" %>   <!-- убедимся, что EL включён (по умолчанию true в современных контейнерах) -->
 <%
     // Получаем данные, переданные контроллером
     List<String> categories = (List<String>) request.getAttribute("categories");
@@ -12,8 +13,11 @@
     <title>Выбор категории</title>
 </head>
 <body>
-<h1>Выберите категорию вопросов</h1>
+<h4>Пользователь: ${sessionScope.user.username}</h4>
+<%-- Ошибка через EL (если передана) --%>
+${not empty error ? '<p style="color:red;">'.concat(error).concat('</p>') : ''}
 
+<h1>Выберите категорию вопросов</h1>
 <%-- Если есть ошибка, выводим её --%>
 <% if (error != null) { %>
     <p style="color: red;"><%= error %></p>

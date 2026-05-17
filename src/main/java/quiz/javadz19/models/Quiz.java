@@ -8,7 +8,7 @@ import java.util.stream.Collectors;
  * бизнес-логику для работы с ними (получение категорий, фильтрация, проверка ответа).
  * Все вопросы инициализируются один раз в статическом блоке.
  */
-public class QuizModel {
+public class Quiz {
 
     // Статический список всех вопросов
     private static final List<Question> ALL_QUESTIONS = new ArrayList<>();

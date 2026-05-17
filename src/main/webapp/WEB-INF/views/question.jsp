@@ -1,4 +1,5 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
+<%@ page isELIgnored="false" %>   <!-- убедимся, что EL включён (по умолчанию true в современных контейнерах) -->
 <%@ page import="quiz.javadz19.models.Question" %>
 <%
     // Получаем данные от контроллера
@@ -18,6 +19,11 @@
     </style>
 </head>
 <body>
+
+<h4>Пользователь: ${sessionScope.user.username}</h4>
+<%-- Ошибка через EL (если передана) --%>
+${not empty error ? '<p style="color:red;">'.concat(error).concat('</p>') : ''}
+
 <h2>Категория: <%= category %></h2>
 <div id="timer">Осталось: 30 сек.</div>
 <div class="question-text">

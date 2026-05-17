@@ -7,7 +7,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.*;
 import jakarta.servlet.annotation.*;
 
-import quiz.javadz19.models.QuizModel;
+import quiz.javadz19.models.Quiz;
 
 /**
  * Контроллер выбора категории.
@@ -24,8 +24,16 @@ public class StartController extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+
+        // Проверка авторизации: если пользователь не в сессии – отправляем на вход
+        HttpSession session = request.getSession(false);
+        if (session == null || session.getAttribute("user") == null) {
+            response.sendRedirect(request.getContextPath() + "/auth?action=login");
+            return;
+        }
+
         // Получаем список категорий из модели
-        request.setAttribute("categories", QuizModel.getCategories());
+        request.setAttribute("categories", Quiz.getCategories());
         // Передаём управление на JSP-представление
         request.getRequestDispatcher("/WEB-INF/views/start.jsp").forward(request, response);
     }
@@ -38,12 +46,20 @@ public class StartController extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+
+        // Аналогичная проверка авторизации (защита от прямого POST)
+        HttpSession session = request.getSession(false);
+        if (session == null || session.getAttribute("user") == null) {
+            response.sendRedirect(request.getContextPath() + "/auth?action=login");
+            return;
+        }
+
         String selectedCategory = request.getParameter("category");
 
         if (selectedCategory == null || selectedCategory.isEmpty()) {
             // Категория не выбрана: добавляем сообщение об ошибке и возвращаем форму
             request.setAttribute("error", "Пожалуйста, выберите категорию.");
-            request.setAttribute("categories", QuizModel.getCategories());
+            request.setAttribute("categories", Quiz.getCategories());
             request.getRequestDispatcher("/WEB-INF/views/start.jsp").forward(request, response);
             return;
         }
