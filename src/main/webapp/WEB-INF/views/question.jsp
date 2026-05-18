@@ -1,12 +1,14 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ page isELIgnored="false" %>   <!-- убедимся, что EL включён (по умолчанию true в современных контейнерах) -->
 <%@ page import="quiz.javadz19.models.Question" %>
+<%@ page import="quiz.javadz19.models.User" %>
 <%
     // Получаем данные от контроллера
     Question question = (Question) request.getAttribute("question");
     int currentIndex = (Integer) request.getAttribute("currentIndex");
     int totalQuestions = (Integer) request.getAttribute("totalQuestions");
     String category = (String) request.getAttribute("category");
+    User user = (User) session.getAttribute("user");
 %>
 <!DOCTYPE html>
 <html>
@@ -19,11 +21,14 @@
     </style>
 </head>
 <body>
-
-<h4>Пользователь: ${sessionScope.user.username}</h4>
-<%-- Ошибка через EL (если передана) --%>
-${not empty error ? '<p style="color:red;">'.concat(error).concat('</p>') : ''}
-
+<%-- Блок пользователя и выхода --%>
+<% if (user != null) { %>
+<p>
+    Пользователь: <strong><%= user.getUsername() %></strong> |
+    <a href="${pageContext.request.contextPath}/auth?action=logout">Выйти</a>
+</p>
+<hr>
+<% } %>
 <h2>Категория: <%= category %></h2>
 <div id="timer">Осталось: 30 сек.</div>
 <div class="question-text">

@@ -29,13 +29,25 @@ public class AuthController extends HttpServlet {
             throws ServletException, IOException {
 
         HttpSession session = request.getSession(false);
+        String action = request.getParameter("action");
+
+        // --- Обработка выхода (logout) ---
+        if ("logout".equals(action)) {
+            // Если сессия существует – завершаем её
+            if (session != null) {
+                session.invalidate(); // удаляет все атрибуты и разрушает сессию
+            }
+            // Перенаправляем на страницу входа (можно на главную, но логичнее на вход)
+            response.sendRedirect(request.getContextPath() + "/auth?action=login");
+            return; // обязательно, чтобы не продолжалась обработка
+        }
+
         // Если пользователь уже залогинен – сразу перенаправляем на страницу викторины
         if (session != null && session.getAttribute("user") != null) {
             response.sendRedirect(request.getContextPath() + "/start");
             return;
         }
 
-        String action = request.getParameter("action");
         // По умолчанию показываем форму входа
         if (action == null || action.isEmpty()) {
             action = "login";
