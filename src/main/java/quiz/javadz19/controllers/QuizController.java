@@ -40,7 +40,9 @@ public class QuizController extends HttpServlet {
         if (category != null && !category.isEmpty()) {
             // Получаем вопросы для выбранной категории через модель
             List<Question> categoryQuestions = Quiz.getQuestionsByCategory(category);
-
+            // Сохраняем время начала всей викторины и список для длительностей ответов
+            session.setAttribute("quizStartTime", System.currentTimeMillis());
+            session.setAttribute("questionDurations", new ArrayList<Long>());
             // Если категория не найдена – показываем страницу с ошибкой
             if (categoryQuestions.isEmpty()) {
                 request.setAttribute("error", "Вопросы категории \"" + category + "\" не найдены.");
@@ -78,6 +80,26 @@ public class QuizController extends HttpServlet {
             for (boolean b : results) {
                 if (b) correctCount++;
             }
+            // Подсчёт времени
+            List<Long> durations = (List<Long>) session.getAttribute("questionDurations");
+            Long quizStartTime = (Long) session.getAttribute("quizStartTime");
+
+            double totalTimeSec = 0.0;
+            double avgTimeSec = 0.0;
+
+            if (durations != null && quizStartTime != null) {
+                long totalMillis = 0;
+                for (long d : durations) {
+                    totalMillis += d;
+                }
+                totalTimeSec = totalMillis / 1000.0;
+                if (!durations.isEmpty()) {
+                    avgTimeSec = totalTimeSec / durations.size();
+                }
+            }
+            request.setAttribute("totalTimeSeconds", totalTimeSec);
+            request.setAttribute("averageTimeSeconds", avgTimeSec);
+
             // Передаём данные в JSP результатов
             request.setAttribute("category", quizCategory);
             request.setAttribute("questions", quizQuestions);
@@ -91,6 +113,9 @@ public class QuizController extends HttpServlet {
             session.removeAttribute("currentIndex");
             session.removeAttribute("results");
             session.removeAttribute("category");
+            session.removeAttribute("quizStartTime");
+            session.removeAttribute("questionDurations");
+            session.removeAttribute("questionStartTime");
 
             request.getRequestDispatcher("/WEB-INF/views/result.jsp").forward(request, response);
             return;
@@ -102,7 +127,8 @@ public class QuizController extends HttpServlet {
         request.setAttribute("currentIndex", currentIndex);
         request.setAttribute("totalQuestions", quizQuestions.size());
         request.setAttribute("category", quizCategory);
-
+        // Перед forward на question.jsp запоминаем время начала показа вопроса.
+        session.setAttribute("questionStartTime", System.currentTimeMillis());
         request.getRequestDispatcher("/WEB-INF/views/question.jsp").forward(request, response);
     }
 
@@ -139,6 +165,16 @@ public class QuizController extends HttpServlet {
         boolean isTimeout = "true".equals(timeoutParam);
 
         Question currentQ = quizQuestions.get(currentIndex);
+
+        // Получаем время начала вопроса и вычисляем длительность ответа
+        Long questionStartTime = (Long) session.getAttribute("questionStartTime");
+        if (questionStartTime != null) {
+            long duration = System.currentTimeMillis() - questionStartTime;
+            List<Long> durations = (List<Long>) session.getAttribute("questionDurations");
+            if (durations != null) {
+                durations.add(duration);
+            }
+        }
 
         // Используем модель для проверки ответа
         boolean isCorrect = Quiz.checkAnswer(currentQ, answerParam, isTimeout);

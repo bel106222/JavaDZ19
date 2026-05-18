@@ -10,6 +10,8 @@
   int total = (Integer) request.getAttribute("total");
   int incorrectCount = (Integer) request.getAttribute("incorrectCount");
   User user = (User) session.getAttribute("user");
+  double totalTimeSeconds = (Double) request.getAttribute("totalTimeSeconds");
+  double averageTimeSeconds = (Double) request.getAttribute("averageTimeSeconds");
 %>
 <!DOCTYPE html>
 <html>
@@ -30,6 +32,13 @@
 <h2>Категория: <%= category %></h2>
 <p><b>Правильных ответов:</b> <%= correctCount %> из <%= total %></p>
 <p><b>Неправильных ответов (или пропущено):</b> <%= incorrectCount %></p>
+<hr>
+<%
+  totalTimeSeconds = (Double) request.getAttribute("totalTimeSeconds");
+  averageTimeSeconds = (Double) request.getAttribute("averageTimeSeconds");
+%>
+<p><b>Общее время викторины:</b> <%= String.format("%.1f", totalTimeSeconds) %> сек.</p>
+<p><b>Среднее время на вопрос:</b> <%= String.format("%.1f", averageTimeSeconds) %> сек.</p>
 <hr>
 <h3>Детализация:</h3>
 <ol>
